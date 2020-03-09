@@ -1,0 +1,17 @@
+Membuat controller :
+    php artisan make:controller NamaController --resource
+        --resource digunakan untuk membuat fungsi otomatis ex: add,edit show.
+Membuat Migration table :
+    php artisan make:migration nama_tabel_table 
+    kemudain php artisan migrate
+Membuat add field di table
+    php artisan make:migration add_nmfield_to_nmtable --table=nmtable
+    kemudian buka file yang sudah dibuat kemudian edit.
+    tambahkan nullable()->unsigned()->after('jika ingin diinsert setelah table apa')
+    pada function down tambahkan script : $table->dropColumn('nmfield')
+Membuat Model :
+    php artisan make:model namamodel
+Membuat Controller & model :
+    php artisan make:controller NamaContorller -r -m namamodel
+Untuk merubah default table di file model gunakan
+    protected $table = 'nama table'

@@ -1,0 +1,8 @@
+untuk kernel linux 5.3 gunakan script ini :
+sudo apt install git build-essential dkms
+git clone -b extended https://github.com/lwfinger/rtlwifi_new.git
+sudo dkms add ./rtlwifi_new
+sudo dkms install rtlwifi-new/0.6
+sudo modprobe -r rtl8723de && sudo modprobe rtl8723de
+echo "options rtl8723de ant_sel=3" | sudo tee /etc/modprobe.d/rtl8723de.conf
+reboot
