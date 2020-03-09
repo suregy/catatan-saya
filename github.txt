@@ -64,8 +64,8 @@
 == MARGE ==
 	-> ada dua jenis marge : Fast Forward , Three-way marge.
 	#	Fast Forward terjadi ketika brach yang akan kita marge berada di jalur langsung / direct path
-	
-	#	
-	
-		
+	#
+
+
+#GIT REMOTE
 	
