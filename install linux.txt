@@ -1,0 +1,290 @@
+
+change resolv.conf
+--------------
+nameserver 192.168.1.1 --> gateaway
+
+
+
+change mirror apt
+------------------
+nano /etc/apt/sources.list
+
+deb http://mirror.unej.ac.id/debian/ squeeze main
+deb-src http://mirror.unej.ac.id/debian/ squeeze main
+
+deb http://security.debian.org/ squeeze/updates main
+deb-src http://security.debian.org/ squeeze/updates main
+
+# squeeze-updates, previously known as 'volatile'
+deb http://mirror.unej.ac.id/debian/ squeeze-updates main
+deb-src http://mirror.unej.ac.id/debian/ squeeze-updates main
+
+
+$ sudo apt-get install debian-archive-keyring
+$ sudo apt-key update
+
+
+apt-get update
+apt-get upgrade --show-upgraded
+
+install mysql
+---------------- 
+apt-get install mysql-server mysql-client
+
+/etc/init.d/mysql stop
+cp -R -p /var/lib/mysql /data_mysql
+nano /etc/mysql/my.cnf ---> change datadir & port & bind /data_mysql/mysql
+
+
+
+key_buffer              = 64M
+
+thread_concurrency     = 16
+
+
+query_cache_limit       = 2M
+query_cache_size        = 64M
+#
+
+innodb_additional_mem_pool_size = 16M
+innodb_write_io_threads = 8
+innodb_read_io_threads = 8
+innodb_thread_concurrency = 16
+#innodb_flush_log_at_trx_commit = 1
+innodb_log_buffer_size = 8M
+innodb_file_per_table
+innodb_flush_method=O_DIRECT
+innodb_log_file_size=1G
+innodb_buffer_pool_size=4G
+innodb_log_files_in_group = 3
+
+[myisamchk]
+key_buffer_size = 512M
+sort_buffer_size = 512M
+read_buffer = 8M
+write_buffer = 8M
+
+[mysqld_safe]
+open-files-limit = 8192
+
+#innodb_max_dirty_pages_pct = 90
+#innodb_lock_wait_timeout = 120
+
+
+
+
+
+for ubuntu
+--------
+nano /etc/apparmor.d/usr.sbin.mysqld
+-- change
+/var/lib/mysql/ r,
+/var/lib/mysql/** rwk,
+-- to
+/data_mysql/ r,
+/data_mysql/** rwk,
+
+
+
+sudo /etc/init.d/apparmor reload
+
+
+dpkg-reconfigure mysql-server-5.5
+/etc/init.d/mysql restart
+
+found error
+It works now after deleted both ib_logfile0 and ib_logfile1 in /var/lib/mysql
+
+
+select user,host from mysql.user;
+CREATE USER 'root'@'%' IDENTIFIED BY '12345';
+GRANT ALL PRIVILEGES ON * . * TO 'root'@'%';
+FLUSH PRIVILEGES;
+
+
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON db_atisisbada_garut_kab.* to 'atsbd-oper-grt-k'@'localhost';
+
+
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON db_atsbd_serang1.* to 'atsbd-oper-srg-k'@'localhost';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON db_inventory.* to 'atsbd-oper-bgr'@'localhost';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON db_atsbd_serang2.* to 'atsbd-oper-srg-k'@'localhost';
+
+CREATE USER 'atsbd-oper-grt-k'@'localhost' IDENTIFIED BY '12345';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'atsbd-oper-grt-k'@'localhost';
+FLUSH PRIVILEGES;
+
+CREATE USER 'atsbd-oper-tsk-k'@'localhost' IDENTIFIED BY '12345';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'atsbd-oper-tsk-k'@'localhost';
+FLUSH PRIVILEGES;
+
+CREATE USER 'oppsd-serang-k'@'localhost' IDENTIFIED BY '12345';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'oppsd-serang-k'@'localhost';
+FLUSH PRIVILEGES;
+
+
+
+CREATE USER 'atsbd-oper-bgr'@'localhost' IDENTIFIED BY '12345';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'atsbd-oper-grt-k'@'localhost';
+FLUSH PRIVILEGES;
+
+CREATE USER 'atsb-op-krw'@'localhost' IDENTIFIED BY '12345';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'atsb-op-krw'@'localhost';
+FLUSH PRIVILEGES;
+
+CREATE USER 'atsbd-oper-prg'@'localhost' IDENTIFIED BY '12345';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'atsbd-oper-prg'@'localhost';
+FLUSH PRIVILEGES;
+
+CREATE USER 'db_backup'@'localhost' IDENTIFIED BY 'Backup@12345';
+GRANT SELECT,LOCK TABLES,CREATE VIEW,CREATE ROUTINE,TRIGGER,SHOW VIEW,ALTER ROUTINE,EVENT,RELOAD,FILE,SUPER  ON *.* to 'db_backup'@'localhost';
+FLUSH PRIVILEGES;
+
+virtual machine
+CREATE USER 'adminvm'@'%' IDENTIFIED BY 'adminaja';
+GRANT SELECT,INSERT,DELETE,UPDATE,EXECUTE  ON *.* to 'adminvm'@'%';
+FLUSH PRIVILEGES;
+
+
+
+# remove user guest session
+sudo nano /usr/share/lightdm/lightdm.conf.d/50-ubuntu.conf
+allow-guest=false
+
+
+install apache 2
+----------------
+apt-get install apache2
+
+install php5
+------------
+aptitude install php5 libapache2-mod-php5
+
+apt-get install php5 libapache2-mod-php5
+/etc/init.d/apache2 restart
+
+
+apt-cache search php5
+
+apt-get install php5-mysql php5-curl php5-gd php5-intl php-pear php5-imagick 
+apt-get install php5-imap php5-mcrypt php5-memcache php5-ming 
+apt-get install php5-ps php5-pspell php5-recode php5-snmp php5-sqlite php5-tidy php5-xmlrpc php5-xsl
+
+/etc/init.d/apache2 restart
+
+apt-get install php-apc
+
+apt-get install ntfs-3g
+apt-get install mc
+apt-get install htop
+
+sudo apt-get install ntfs3g
+
+
+// sudo apt-get install openssh-server
+config ssh
+----------
+nano /etc/ssh/sshd_config
+
+RSAAuthentication yes
+PubkeyAuthentication yes
+PasswordAuthentication no
+/etc/init.d/ssh reload
+service ssh restart
+
+apt-get install sshfs
+apt-get install rsync
+
+
+create user remote_backup
+----
+useradd remote_backup -m
+mkdir .ssh
+cd .ssh
+nano
+
+useradd migrasi01 -m 
+
+
+--- mount directory
+mkdir /var/www/gambar_tasik
+chown www-data:www-data /var/www/gambar_tasik
+mount --bind /var/www/gambar_tasik /var/www/atsb/gambar2011
+
+umount /var/www/atsb/gambar2011
+
+-- mount from start up
+nano /etc/fstab
+/var/www/gambar_tasik             /var/www/atsb/gambar2011                 none    bind    0 0
+
+
+
+
+ubuntu
+enable root
+sudo su 
+sudo passwd root
+sudo -i
+
+disable root
+sudo passwd -dl root
+
+check disk
+"sudo lshw -C disk"
+
+http://www.yourhowto.net/mysql-sample-configuration-innodb-4gb-ram/
+http://www.mysqlcalculator.com/
+
+
+sshfs -p 40800 remote_backup@123.231.252.34:/var/www/atisisbada_demo /mnt/ssh/atisisbada_jabar_prov
+rsync -avz -P /mnt/ssh/atisisbada_jabar_prov /var/www/tmp/jbr
+
+
+sshfs -p 40800 root@192.168.1.40:/var/backup_sistem/atisisbada_jabar_prov/www /mnt/ssh/atisisbada_jabar_prov
+rsync -avz -P /mnt/ssh/atisisbada_jabar_prov /var/www/tmp/jbr
+fusermount -u /mnt/ssh/atisisbada_jabar_prov
+
+
+sshfs -p 40800 root@192.168.1.40:/var/backup_sistem/atisisbada_jabar_prov/www /mnt/ssh/atisisbada_jabar_prov
+
+/var/www/atisisbada_demo
+
+
+sshfs -p 40800 remote_backup@123.231.252.34:/var/www/atisisbada_demo /mnt/ssh/atisisbada_jabar_prov
+rsync -avz /mnt/ssh/atisisbada_jabar_prov /var/backup_sistem/atisisbada_demo/www
+fusermount -u /mnt/ssh/atisisbada_jabar_prov
+
+
+mysqldump -uroot -p --no-data --skip-events --skip-routines --skip-triggers db_sislog_tmp_v2   > db_sislog_tmp_v2.struk.sql
+mysql -uroot -p db_sislog_tmp_v2 < db_sislog_tmp_v2.struk.sql
+
+
+/var/backup_sistem/atisisbada_demo/www/atisisbada_jabar_prov
+
+sshfs root@192.168.1.40:/var/backup_sistem/atisisbada_demo/www/atisisbada_jabar_prov /mnt/ssh
+rsync -avz -p /mnt/ssh /var/backup_sistem/atisisbada_bandung_barat/www
+
+
+
+sshfs -p 40800 remote_backup@123.231.252.34:/var/www/atisisbada_demo /mnt/ssh
+rsync -avz -p /mnt/ssh /var/backup_sistem/atisisbada_bandung_barat/www
+
+
+update
+rsync -rtvu  source_folder/ destination_folder/
+
+rsync -rtvu var/backup_sistem/atisisbada_bandung_barat/www/atisisbada_bandung_barat/gambar2011/ var/www/atisisbada_bandung_barat/gambar2011/
+
+
+
+sshfs -p 40800 remote_backup@123.231.252.34:/var/backup_sistem/atisisbada_serang_kab/mysql /mnt/ssh
+rsync -avz -p /mnt/ssh /var/backup_sistem/atisisbada_serang_kab/mysql
+fusermount -u /mnt/ssh
+
+update error public key
+apt-get install debian-archive-keyring
+
+
+f the ip address of your system is 32.64.128.200 and you import the following rules, you would be able to connect to http://32.64.128.200:8080 and actually see the Google search engine because 216.239.59.105:80 is one of Google’s web servers.
+
+iptables -t nat -A PREROUTING -p tcp -s 0/0 -d 32.64.128.200 --dport 8080 -j DNAT --to 216.239.59.105:80
+iptables -t nat -A POSTROUTING -o eth0 -d 216.239.59.105 -j SNAT --to-source 32.64.128.200

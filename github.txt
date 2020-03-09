@@ -1,0 +1,71 @@
+# memahami FORK #
+== Definisi Fork
+	1.	Membuat copy dari repo orang lain beserta history commit.
+	2. Jembatan antara repo original dan duplikatnya.
+	3. Modifikasi terhadap repo orginal.
+	4. Dengan fork kita bisa mengusulkan perubahan apabila source kita lebih baik.
+	5. Fork tidak sama dengan clone.
+== Cara Fork repo
+	1. Bisa mengedit langsung di file repo orang lain, dengan syarat kita harus login github terlebih dahulu.
+	2. Klik tombol Fork di kanan atas.
+== Full Request
+	1. Apabila kita akan mengajukan perubahan file pada repo original atau repo yang kita fork, kita bisa menggunakan tombol NEW PULL REQUEST untuk mengajukan perubahan.
+	2. Kemudian klik tombol CREATE PULL REQUEST.
+	3. Nanti di repo original akan muncul pada menu PULL REQUEST.
+	4. Kalo diterima oleh repo original tinggal marge oleh pemilik repo original.
+
+## BEKERJA DENGAN GIT ##
+# Command Line GIT #
+	1. git init => untuk menginisiasi repo local.
+	2. git add <file(s)> => nambahkan file ke stagging area.
+	3. git status => untuk mengetahui status repo, ada perubahan file atau penambahan file atau delete file.
+	4. git commit => untuk melakukan commit.
+	5. git config => untuk configruasi git.
+	6. git brach => untuk membuat brach.
+	7. git help => untuk help.
+# 3 area pada repo GIT #
+	1. Working tree => folder atau repo tempat kita bekerja / mengerjakan project.
+	2. Staging area => memberitahu git apakah ada perubahan atau tidak.
+	3. History => apabila sudah di commit akan masuk ke area ini.
+	#intermezo
+		--> pwd => print working directory
+
+	# Memulai GIT
+	1.	masuk ke directory 
+	2.	git init untuk inisiasi git
+	3.	git status untuk mengetahui status file
+	4.	git add nama file untuk memasukan file ke stagging area.
+	5.	git config --global user.email "you@example.com".
+	6.	git config --global user.name "Yourname". //sebaiknya disesuaikan sama dengan github.
+	7.	git commit -m (m artinya message) "ini message contoh pake kutip ya"
+	8.	git add . (tanda titik artinya semua file di add)
+	7.	git commit -m untuk commit
+	9.	git log (untuk history commit)
+		-> git log -3 untuk melihat log 3 terakhir.
+		-> git log --nama file untuk melihat commit file tertentu.
+	10.	git checkout 5 digit pertama commit --nama file untuk mengembalikan file pada kondisi yang kita inginkan, misal mengembalikan file yang di delete.
+#GIT BRANCH dan MARGE
+	1.	GIT init (untuk inisiasi)
+	2.	buat file baru dg nm misal : mahasiswa.html
+		-> isi beberapa code.
+		-> jalankan git stutus > kemudian git add .
+		-> git commit - m "pesan"
+		-> apabila stutus sudah modified kita bisa gunakan git commit -am "isi pesan" digunakan untuk add dan commit
+== BRANCH ==
+	1.	git branch nama_branch untuk membuat branch baru
+	2.	apabila git brach tanpa nama_branch akan menampilkan brach apa saja
+	3.	buat branch baru dengan git branch dosen dan git branch staff
+	4.	git log --all --decorate --online --graph untuk menampilkan log graph
+	5.	alis graph = "git log --all --decorate --online --graph" untuk membuat alias graph log
+	6.	git checkout nama_branch untuk pindah ke branch
+	7.	buat file dosen.html kemudian lakukan commit
+	8.	kemudian panggil alias graph
+	9.	lakukan untuk brach staff dan buat file staff.html kemudian commit
+== MARGE ==
+	-> ada dua jenis marge : Fast Forward , Three-way marge.
+	#	Fast Forward terjadi ketika brach yang akan kita marge berada di jalur langsung / direct path
+	
+	#	
+	
+		
+	
