@@ -1,0 +1,143 @@
+CREATE DEFINER=`root`@`localhost` FUNCTION `sf_penerimaan_posting`(`Id_PenDet_` int(11), `JMLBRGNY_` int(11), `thn_anggaran_` char(4), `uid_` text, `microtime_` text, `noreg_` varchar(10)) RETURNS text CHARSET latin1 COLLATE latin1_general_ci
+BEGIN       
+    DECLARE habis BOOLEAN DEFAULT FALSE;
+    DECLARE c1_, f1_,f2_ SMALLINT(3);
+    DECLARE bk_ur_, ck_ur_, dk_ur_, bk_, ck_, dk_, p_, q_ SMALLINT(5);
+    DECLARE c_,d_,e_,f_, g_, h_, i_, a1_, a_, b_, asal_usul_bi_, e_Baru_ CHAR(2);
+    DECLARE e1_,j_,cara_bayar_, barangdistribusi_,staset1_, staset2_, stasetpilih_, e1_Baru_, TukREK_ CHAR(3);
+    DECLARE refid_terima_, thn_perolehan_, thn_perolehan_Det_, ID_BI_barunya_, JML_CEK_ INT(11);
+    DECLARE satuan_, Id_Distribusi_ VARCHAR(50);
+    DECLARE sumber_dana_, asal_usul_Terima_, no_dokumen_sumber_ VARCHAR(100);
+    DECLARE nomor_kontraknya_, Hasil_Distribusi_, hasilstat_ VARCHAR(150);
+    DECLARE tgl_dok_sum_, tgl_kontraknya_,tgl_bukunya_, tgl_perolehan_  date;
+    DECLARE jml_, jumlah_data_input_, cekHarga_, jml_barang_selesai_proses_, hitungSelesai_, barang_sudah_proses_, cek_harga_diBI_, JML_BRG_DET_, jumlah_Baru_ int;
+    
+    DECLARE harga_perolehan1_, harga_perolehan2_   DECIMAL(18,2);  
+    DECLARE harga_beli_barang1_ , harga_beli_barang2_, harga_atribusi_barang1_, harga_atribusi_barang2_, harga_beli_total_, harga_atribusi_total_ DECIMAL(18,2);  
+	DECLARE harga_barang_satuan_dplh_, harga_beli_barang_, harga_atribusi_barang_  DECIMAL(18,2);
+	DECLARE harga_barang_satuan_dplh_dstr_, harga_beli_total_dstr_, harga_atribusi_barang_dstr_  DECIMAL(18,4);   
+    
+	DECLARE pengguna_, bahan_ text;
+    DECLARE keterangan_, keterangan_barang_  text;    	
+	declare keterangan2_, keterangan_barang2_ text;
+    declare keterangan3_, keterangan_barang3_ text;
+    
+    DECLARE datat_barang CURSOR FOR SELECT e,e1, jumlah, Id, hartot, hrg_beli, hrg_atr FROM t_distribusi WHERE refid_penerimaan_det=Id_Pendet_ AND sttemp='0' GROUP BY c1,c,d,e,e1;
+    DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET habis = TRUE;
+    
+     
+    set keterangan_ = '';    
+    set keterangan_barang_ ='';  	
+	
+    
+	SELECT c1, c, d, e, e1, f1, f2, f, g, h, i, j, refid_terima, jml, satuan, dat_hargabeli1, dat_hargabeli2, dat_atribusi1, dat_atribusi2, dat_tot1, dat_tot2, staset1, staset2, barangdistribusi, thn_perolehan, tgl_perolehan, ket_barang, keterangan, CONCAT(k,l,m), pengguna, bahan INTO c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, refid_terima_, jml_, satuan_, harga_beli_barang1_, harga_beli_barang2_, harga_atribusi_barang1_, harga_atribusi_barang2_, harga_perolehan1_, harga_perolehan2_, staset1_, staset2_, barangdistribusi_, thn_perolehan_Det_, tgl_perolehan_,keterangan_barang2_, keterangan2_, TukREK_, pengguna_, bahan_  FROM t_penerimaan_barang_det WHERE Id=Id_PenDet_;
+		
+	SELECT tgl_dokumen_sumber, no_dokumen_sumber, bk, ck, dk, p, q, nomor_kontrak, tgl_kontrak, tgl_buku, cara_bayar, a1, a, b, YEAR(tgl_dokumen_sumber), asal_usul_bi, bk_ur, ck_ur, dk_ur, sumber_dana, asal_usul INTO tgl_dok_sum_, no_dokumen_sumber_, bk_, ck_, dk_, p_, q_, nomor_kontraknya_, tgl_kontraknya_, tgl_bukunya_,cara_bayar_, a1_, a_, b_, thn_perolehan_, asal_usul_bi_, bk_ur_, ck_ur_, dk_ur_, sumber_dana_, asal_usul_Terima_ FROM t_penerimaan_barang WHERE Id=refid_terima_;
+	
+	SET hasilstat_ = "NEXT";          
+    SET hitungSelesai_ = 0;
+	SET barang_sudah_proses_ = 0;
+	SET cekHarga_ = 0;
+	SET harga_barang_satuan_dplh_ = 0;
+    SET Id_Distribusi_ = 0;	
+	
+    set keterangan3_ = keterangan2_;  
+    set keterangan_barang3_ = keterangan_barang2_;                     
+    set keterangan_ = keterangan2_;	 
+    set keterangan_barang_  = keterangan_barang2_; 
+    
+    SET harga_beli_total_ = (harga_beli_barang1_ * (jml_ - 1)) + harga_beli_barang2_;
+    SET harga_atribusi_total_ = (harga_atribusi_barang1_ * (jml_ - 1)) + harga_atribusi_barang2_;
+    SET harga_barang_satuan_dplh_ = harga_beli_total_ + harga_atribusi_total_;
+    
+    IF asal_usul_Terima_ != 1 THEN        
+        SET thn_perolehan_ = thn_perolehan_Det_;
+    END IF;  
+    
+    SET stasetpilih_ = staset1_;
+   
+    #UPDATE PINDAH ASAL USUL BI
+    if asal_usul_Terima_ = 1 and TukREK_ != '523' then 
+    	SET asal_usul_bi_ = 6;
+    end if;
+
+    IF barangdistribusi_ = 1 THEN
+        SET Id_distribusi_ = 0;  
+        OPEN datat_barang;
+		REPEAT
+		FETCH datat_barang INTO e_Baru_, e1_Baru_, jumlah_Baru_, Id_distribusi_, harga_barang_satuan_dplh_dstr_, harga_beli_total_dstr_, harga_atribusi_barang_dstr_;          
+        IF habis = FALSE THEN  
+            SELECT IFNULL(SUM(jml),0) INTO JML_CEK_ FROM t_penerimaan_postbi_idbi WHERE refid_terima= refid_terima_ AND refid_terima_det= Id_PenDet_ AND refid_distribusi=Id_distribusi_;
+            IF JML_CEK_ = 0 THEN
+                
+                
+                INSERT INTO buku_induk (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, thn_perolehan, jml_barang, satuan, harga, jml_harga, asal_usul, kondisi, status_barang, staset, tgl_buku, tahun, uid, harga_beli, harga_atribusi, no_ba, tgl_ba, bk_p, ck_p, dk_p, p, q, refid_terima, refid_terima_det, bk,ck,dk, jns_hibah, no_spk, tgl_spk, tgl_perolehan, microtime) values (a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_, thn_perolehan_, jumlah_Baru_, satuan_, harga_barang_satuan_dplh_dstr_, harga_barang_satuan_dplh_dstr_, asal_usul_bi_, '1', '1', stasetpilih_, tgl_bukunya_, thn_anggaran_, uid_, harga_beli_total_dstr_, harga_atribusi_barang_dstr_, no_dokumen_sumber_, tgl_dok_sum_, bk_, ck_, dk_, p_, q_, refid_terima_, Id_PenDet_, bk_ur_, ck_ur_, dk_ur_, sumber_dana_, nomor_kontraknya_, tgl_kontraknya_, tgl_perolehan_, microtime_);  		    
+              
+                SELECT idbi INTO ID_BI_barunya_ FROM t_penerimaan_postbi_temp WHERE microtime=microtime_;           
+
+                IF f_='01' OR CONCAT(f1_,f2_,f_) = '131' THEN
+                   INSERT INTO kib_a (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi, penggunaan) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_,pengguna_);            
+                ELSEIF f_='02' OR CONCAT(f1_,f2_,f_) = '132' THEN            
+                   INSERT INTO kib_b (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, merk, ket, tahun, idbi,bahan) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_, bahan_);
+                ELSEIF f_='03' OR CONCAT(f1_,f2_,f_) = '133' THEN            
+                   INSERT INTO kib_c (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_);
+                ELSEIF f_='04' OR CONCAT(f1_,f2_,f_) = '134' THEN            
+                   INSERT INTO kib_d (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_);
+                ELSEIF f_='05' OR CONCAT(f1_,f2_,f_) = '135' THEN            
+                   INSERT INTO kib_e (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, buku_judul, ket, tahun, idbi,seni_bahan,penggunaan) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_, bahan_, pengguna_);
+                ELSEIF f_='06' OR CONCAT(f1_,f2_,f_) = '136' THEN            
+                   INSERT INTO kib_f (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_);
+                ELSEIF f_='07' OR CONCAT(f1_,f2_,f_) = '153' THEN            
+                   INSERT INTO kib_g (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, uraian, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_Baru_, e1_Baru_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_perolehan_, ID_BI_barunya_);
+                END IF;
+                            
+                UPDATE buku_induk SET idawal=ID_BI_barunya_ WHERE id=ID_BI_barunya_;            
+                INSERT INTO t_penerimaan_postbi_idbi (refid_terima, refid_terima_det, refid_distribusi, idbi, harga, jml, harga_satuan1, harga_satuan2, uid) VALUES (refid_terima_, Id_PenDet_, Id_Distribusi_, ID_BI_barunya_, harga_barang_satuan_dplh_dstr_, jumlah_Baru_, harga_beli_barang1_, harga_beli_barang2_, uid_);                        
+            END IF;  
+        
+        END IF;
+        UNTIL habis END REPEAT;
+     CLOSE datat_barang;
+        
+    ELSE
+        SELECT IFNULL(SUM(jml),0) INTO JML_CEK_ FROM t_penerimaan_postbi_idbi WHERE refid_terima= refid_terima_ AND refid_terima_det= Id_PenDet_;
+        IF JML_CEK_ = 0 THEN            
+            INSERT INTO buku_induk (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, thn_perolehan, jml_barang, satuan, harga, jml_harga, asal_usul, kondisi, status_barang, staset, tgl_buku, tahun, uid, harga_beli, harga_atribusi, no_ba, tgl_ba, bk_p, ck_p, dk_p, p, q, refid_terima, refid_terima_det, bk,ck,dk, jns_hibah, no_spk, tgl_spk, microtime,penggunaan) values (a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_, thn_perolehan_, jml_, satuan_, harga_barang_satuan_dplh_, harga_barang_satuan_dplh_, asal_usul_bi_, '1', '1', stasetpilih_, tgl_bukunya_, thn_anggaran_, uid_, harga_beli_total_, harga_atribusi_total_, no_dokumen_sumber_, tgl_dok_sum_, bk_, ck_, dk_, p_, q_, refid_terima_, Id_PenDet_, bk_ur_, ck_ur_, dk_ur_, sumber_dana_, nomor_kontraknya_, tgl_kontraknya_, microtime_,pengguna_);  		    
+                  
+            SELECT idbi INTO ID_BI_barunya_ FROM t_penerimaan_postbi_temp WHERE microtime=microtime_;           
+
+            IF f_='01' THEN
+               INSERT INTO kib_a (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);            
+            ELSEIF f_='02' THEN            
+               INSERT INTO kib_b (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, merk, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);
+            ELSEIF f_='03' THEN            
+               INSERT INTO kib_c (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);
+            ELSEIF f_='04' THEN            
+               INSERT INTO kib_d (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);
+            ELSEIF f_='05' THEN            
+               INSERT INTO kib_e (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, buku_judul, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);
+            ELSEIF f_='06' THEN            
+               INSERT INTO kib_f (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, alamat, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);
+            ELSEIF f_='07' THEN            
+               INSERT INTO kib_g (a1, a, b, c1, c, d, e, e1, f1, f2, f, g, h, i, j, noreg, uraian, ket, tahun, idbi) VALUES(a1_, a_, b_, c1_, c_, d_, e_, e1_, f1_, f2_, f_, g_, h_, i_, j_, noreg_,keterangan_barang_, keterangan_, thn_anggaran_, ID_BI_barunya_);
+            END IF;
+                        
+            UPDATE buku_induk SET idawal=ID_BI_barunya_ WHERE id=ID_BI_barunya_;            
+            INSERT INTO t_penerimaan_postbi_idbi (refid_terima, refid_terima_det, refid_distribusi, idbi, harga, jml, harga_satuan1, harga_satuan2, uid) VALUES (refid_terima_, Id_PenDet_, Id_Distribusi_, ID_BI_barunya_, harga_barang_satuan_dplh_, jml_, harga_beli_barang1_, harga_beli_barang2_, uid_);
+        END IF;        
+    END IF;
+    
+    SELECT IFNULL(SUM(jml),0) INTO JML_BRG_DET_ FROM t_penerimaan_postbi_idbi WHERE refid_terima_det=Id_PenDet_ AND refid_terima=refid_terima_; 
+       
+    IF jml_ = JML_BRG_DET_ THEN
+       UPDATE t_penerimaan_barang_det SET status_posting='1' WHERE Id=Id_PenDet_;
+    END IF;
+    
+    DELETE FROM t_penerimaan_postbi_temp  WHERE microtime=microtime_;
+    
+	SELECT SUM(jml) INTO jml_barang_selesai_proses_ FROM t_penerimaan_postbi_idbi WHERE refid_terima=refid_terima_ ;    
+	
+    SET hasilstat_ = CONCAT(hasilstat_," ",jml_barang_selesai_proses_, " ", harga_barang_satuan_dplh_, " ",hitungSelesai_, " ", JML_CEK_);  
+    
+ RETURN hasilstat_; 
+END;
