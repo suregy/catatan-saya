@@ -68,4 +68,15 @@
 
 
 #GIT REMOTE
-	
+	# buat repo di web github dengan readme di un ceklis.
+	# git remote add origin url repo gitu 
+		-> untuk push pertama kali
+	# git push -u origin master
+		-> untuk push updatan
+		-> apabila sudah -u tinggal lakukan git push
+		
+		
+		
+		
+		
+		
